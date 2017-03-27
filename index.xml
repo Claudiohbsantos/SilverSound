@@ -19,17 +19,4 @@
       </version>
     </reapack>
   </category>
-  <metadata>
-    <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 Courier;}}
-{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
-\widowctrl\hyphauto
-
-{\pard \ql \f0 \sa180 \li0 \fi0 \b \fs36 Silver Sound reaper resources\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 This repository contains scripts and other resources used by {\field{\*\fldinst{HYPERLINK "http://silversound.us"}}{\fldrslt{\ul
-Silver Sound
-}}}
-, a sound studio located in New York City that uses Reaper as it's primary DAW. All resources here are tailored specifically for the internal usage of the studio system, so absolute paths and other specificities are hard-coded into the source. Feel free to study the resources for reference but don't expect them to be compatible with other setups.\par}
-}
-]]></description>
-  </metadata>
 </index>
