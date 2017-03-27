@@ -1,4 +1,4 @@
-
+-- @noindex
 -----------
 local masterDB = {}
 local localDBInfo = {}
