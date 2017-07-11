@@ -1,5 +1,5 @@
 -- @description SS_SilverSoundDatabaseInstaller
--- @version 1.0
+-- @version 1.1
 -- @author Claudiohbsantos
 -- @link http://claudiohbsantos.com
 -- @date 2017 03 26
@@ -7,7 +7,7 @@
 --   # SS_SilverSoundDatabaseInstaller
 --   Installer for the sound effects databases located in the DroboFS. Make sure you are connected to the network before running the script
 -- @changelog
---   - Initial Release
+--   - small fixes
 -----------
 local masterDB = {}
 
@@ -110,9 +110,17 @@ function copyDBFiles(masterDB)
 	else
 		updateCmd = [[cmd.exe /C "robocopy "]]..masterDB.dbfiles..[[" "]]..localdbfiles..[["]]
 	end
-
-	
 	reaper.ExecProcess(updateCmd,0)
+
+	local winUpdateLastMod = [[cmd.exe /C "copy /Y "]]..masterDB.dir..pathDiv..[[lastMod.txt" "]]..localDB.path..pathDiv..[[lastMod.txt"]]
+
+	local copyLastMod
+	if os == "OSX32" or os == "OSX64" then
+		copyLastMod = [[rsync -r "]]..masterDB.path..pathDiv..[[lastMod.txt" "]]..localdbfiles..pathDiv..[[lastMod.txt"]]
+	else
+		copyLastMod = [[cmd.exe /C "robocopy "]]..masterDB.path..pathDiv..[[lastMod.txt" "]]..localdbfiles..pathDiv..[[lastMod.txt"]]
+	end
+	reaper.ExecProcess(copyLastMod,0)
 
 	reaper.ShowMessageBox("The Local SilverSound Database was installed. If You're on Windows the previous .ini file was copied as a Backup.","Sound Library Installer",0)
 end

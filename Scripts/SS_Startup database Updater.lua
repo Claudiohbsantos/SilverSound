@@ -1,8 +1,18 @@
--- @noindex
------------
+--[[
+@description SS_Startup database Updater
+@version 1.0
+@author Claudiohbsantos
+@link http://claudiohbsantos.com
+@date 2017 07 11
+@about
+  # SS_Startup database Updater
+  Set this script to check for updates on every startup so it automatically updates the media explorer. 
+@changelog
+  - Initial release
+--]]
+
 local masterDB = {}
-local localDBInfo = {}
-local pathDivider = "\\"
+local localDB = {}
 
 function msg(msg)
 	reaper.ShowConsoleMsg(tostring(msg).."\n")
@@ -12,155 +22,208 @@ function msgBox(msg)
 	reaper.ShowMessageBox(msg,"Title",0)
 end
 
-
 function storeINIFileInTable()
 
 	local reaperINIpath = reaper.get_ini_file()
 	local iniFileTable = {}
+	iniFileTable.head = ""
+	iniFileTable.explorer = ""
+	iniFileTable.tail = ""
 
 	local n = 0
+	local explorerAlreadyCopied
+	local explorerSection
 	for line in io.lines(reaperINIpath) do 
 		n = n+1
 
-		for key,value in line:gmatch("([^=]+)=(.*)") do
-			iniFileTable[key] = value
-			iniFileTable[n] = key
+		if line:match("^%[") then
+			explorerSection = false
 		end
 
-		if not iniFileTable[n] then
-			iniFileTable[n] = line
+		if line:match("%[reaper_explorer%]") or line:match("%[reaper_sexplorer%]") then
+			explorerSection = true
 		end
 
+		if not explorerSection then
+			iniFileTable.head = iniFileTable.head..line.."\n"
+		end
+
+		if explorerSection then
+			iniFileTable.explorer = iniFileTable.explorer..line.."\n"
+		end
 	end
 
 	return iniFileTable
 end
 
-function writeINIFileFromTable(iniTable)
+function loadMasterDatabaseConfig(masterDB)
+
+	local masterConfig
+	if os == "OSX32" or os == "OSX64" then
+		masterConfig = masterDB.dir..pathDiv.."Mac_Media Explorer Config.txt"
+	else
+		masterConfig = masterDB.dir..pathDiv.."Win_Media Explorer Config.txt"
+	end
+
+	local f = io.open(masterConfig, "r")
+	local content = f:read("a")
+	f:close()
+
+	return content
+end
+
+function writeINIFileFromTable(iniTable,masterINISection)
 
 	local reaperINIpath = reaper.get_ini_file()
 
 	file = io.open(reaperINIpath,"w")
-	for i=1,#iniTable,1 do
-		file:write(iniTable[i])
-		if iniTable[iniTable[i]] then
-			file:write("="..iniTable[iniTable[i]])
-		end
-		file:write("\n")
-	end
+
+	file:write(iniTable.head)
+	file:write(masterINISection.."\n")
+
 	file:close()
 
 end
 
-function getlocalDBInfo(iniTable,localDBInfo) -- localDBInfo must have localDBInfo.name filled for search
-
-	for k,v in pairs(iniTable) do
-		if v == localDBInfo.name then
-			localDBInfo.nameKey = k
-			localDBInfo.filenameKey = "Shortcut"..k:match("(%d+)$")
-			localDBInfo.filename = iniTable[localDBInfo.filenameKey]
-			localDBInfo.path = reaper.GetResourcePath()..pathDivider.."MediaDB"..pathDivider..localDBInfo.filename			
-			break
-		end
-	end
-
-	return localDBInfo
-end
-
-function getlocalDBLastModifiedDate(localDBInfo)
-	local cmd = [[cmd.exe /C "for %a in ("]]..localDBInfo.path..[[") do set FileDate=%~ta"]]
-	local cmdReturn = reaper.ExecProcess(cmd,0)
-	localDBInfo.modifiedDate = cmdReturn:match("set FileDate=(.+)")
-
-	return localDBInfo
-end
-
-function getMasterDBinfo(masterPath)
-	
-	if reaper.file_exists(masterPath) then
-		local cmd = [[cmd.exe /C "for %a in ("]]..masterDBInfo.path..[[") do set FileDate=%~ta"]]
-		local cmdReturn = reaper.ExecProcess(cmd,0)
-		masterDBInfo.modifiedDate = cmdReturn:match("set FileDate=(.+)")
-	end
-
-	return masterDBInfo
-end
-
-function isMasterDBNewerthanLocalDB(masterDBInfo,localDBInfo)
-
-
-	local localModDate = {}
-
-	for mon,day,year,hour,min,ampm in localDBInfo.modifiedDate:gmatch("(%d%d)/(%d%d)/(%d%d%d%d) (%d%d):(%d%d) (%a%a)") do
-		localModDate.month = mon
-		localModDate.day = day
-		localModDate.year = year
-		if ampm == "PM" then hour = hour + 12 end
-		localModDate.hour = hour
-		localModDate.min = min
-		localModDate.ampm = ampm
-	end
-
-	local masterModDate = {}
-
-	for mon,day,year,hour,min,ampm in masterDBInfo.modifiedDate:gmatch("(%d%d)/(%d%d)/(%d%d%d%d) (%d%d):(%d%d) (%a%a)") do
-		masterModDate.month = mon
-		masterModDate.day = day
-		masterModDate.year = year
-		if ampm == "PM" then hour = hour + 12 end
-		masterModDate.hour = hour
-		masterModDate.min = min
-		masterModDate.ampm = ampm
-	end
-
-	local localOSTime = os.time(localModDate)
-	local masterOSTime = os.time(masterModDate)
-
-	local timeDifference = os.difftime(localOSTime,masterOSTime) -- positive result means local database is newer
-
-	if timeDifference < 0 then 
-		return true
+function readLastModFile(lastModFile)
+	if reaper.file_exists(lastModFile) then
+		file = io.open(lastModFile,"r")
+			local lastModTime = file:read()
+			local lastModTimeHumandReadable = file:read()
+			local userWhoModded = file:read()
+		file:close()
+		return lastModTime, lastModTimeHumandReadable, userWhoModded
 	else
-		return false
+		return 0,"Never","No One"	
 	end
-
 end
 
-function updateLocalDB(localDBInfo,masterDBInfo)
+function getMasterLastModifiedDate(masterDBpath)
+	local lastModFile = masterDBpath..pathDiv.."lastMod.txt"
+	local lastModTime, userWhoModded = readLastModFile(lastModFile)
 
-	local backupCmd = [[cmd.exe /C "copy /Y "]]..localDBInfo.path..[[" "]]..localDBInfo.name..[[BACKUP"]]
-	reaper.ExecProcess(backupCmd,0)
+	return lastModTime, userWhoModded
+end
 
-	local updateCmd = [[cmd.exe /C "copy /Y "]]..masterDBInfo.path..[[" "]]..localDBInfo.path..[["]]
+function getLocalLastModifiedDate()
+	local lastModFile = localDB.path..pathDiv.."lastMod.txt"
+	local lastModTime, userWhoModded = readLastModFile(lastModFile)
+
+	return lastModTime, userWhoModded
+end
+
+function isMasterDBNewer(masterLastMod,localLastMod)
+	local timeDifference = os.difftime(masterLastMod,localLastMod) -- positive result means master database is newer
+	if timeDifference <= 0 then 
+		return false
+	else
+		return true
+	end
+end
+
+function copyFilesFromMaster()
+	local os = getOS()
+
+	local winCopyCmd = [[cmd.exe /C "robocopy "]]
+	local macCopyCmd = [[rsync -r "]]
+
+	local cmd = ""
+	if os == "mac" then cmd = macCopyCmd else cmd = winCopyCmd end
+
+	local updateCmd = cmd..masterDB.path..[[" "]]..localDB.path..[["]]
 	reaper.ExecProcess(updateCmd,0)
 
-	reaper.ShowMessageBox("The Local SilverSound Database was updated. The previous database was copied as a Backup.","Sound Library Updater",0)
+	local updateLastMod = cmd..masterDB.dir..pathDiv..[[lastMod.txt" "]]..localDB.path..pathDiv..[[lastMod.txt"]]
+	reaper.ExecProcess(updateLastMod,0)
 end
 
-function checkOS()
-	local os = reaper.GetOS()
+function warnUserWait()
+	obj_mainW = 800	
+	obj_mainH = 200
+	obj_offs = 10
+	
+	gui_aa = 1
+	gui_fontname = 'Calibri'
+	gui_fontsize = 40     
+	local gui_OS = reaper.GetOS()
+	if gui_OS == "OSX32" or gui_OS == "OSX64" then gui_fontsize = gui_fontsize - 7 end
 
-	if os == "OSX32" or gui_OS == "OSX64" then
+	local l, t, r, b = 0, 0, obj_mainW,obj_mainH   
+	local __, __, screen_w, screen_h = reaper.my_getViewport(l, t, r, b, l, t, r, b, 1)    
+	local x, y = (screen_w - obj_mainW) / 2, (screen_h - obj_mainH) / 2    
+	gfx.init("Please Wait", obj_mainW,obj_mainH, 0, x, y)  
+	gfx.x = 50
+	gfx.y = 100
+
+	gfx.drawstr("Please Wait Until the process is finished. Do not close reaper.\n\nAnd trust me, even if windows is saying I'm not responding, I'm still here.")
+	gfx.update()
+end
+
+function closeWarnUserWait()
+	gfx.quit()
+end
+
+function updateLocalDB()
+	warnUserWait()
+	copyFilesFromMaster()
+
+	local iniFile = storeINIFileInTable()
+	local masterConfig = loadMasterDatabaseConfig(masterDB)
+	writeINIFileFromTable(iniFile,masterConfig)
+
+	closeWarnUserWait()
+	reaper.ShowMessageBox("The Local SilverSound Database was updated. Please close and reopen the media explorer","Sound Library Updater",0)
+end
+
+function askIfWantToUpdate(date,user)
+	local userOpt = reaper.ShowMessageBox("There is an update for the Silver Sound Database in the drobo.\nThe latest version was updated on "..date.." by "..user.."\nWould you like to update now?","Sound Library Updater",4)
+	return userOpt
+end
+
+function getLocalDBPath(pathDivisor)
+	local iniPath = reaper.get_ini_file()
+	local resourcesDir = string.match(iniPath,"(.+)"..pathDivisor.."REAPER.ini$")
+	local localDBPath = resourcesDir..pathDivisor.."MediaDB"
+	return localDBPath
+end
+
+function getOS()
+	local opsys = reaper.GetOS()
+
+	if opsys == "OSX32" or gui_OS == "OSX64" then
+		local os = "mac"
+	else --windows
+		local os = "win"
+	end
+	return os
+end
+
+function getPathsAccordingToOS()
+	local os = getOS()
+
+	if os == "mac" then
 		pathDiv = "/"
-		masterDB.path = "/Volumes/Public/SFXLibrary/Reaper Media Explorer Databases"
+		masterDB.dir = "/Volumes/Public/SFXLibrary/Reaper Media Explorer Databases"
+		masterDB.path = masterDB.dir..pathDiv.."Mac MediaDB"
 	else --windows
 		pathDiv = "\\"
-		masterDB.path = "Y:\\SFXLibrary\\Reaper Media Explorer Databases"
+		masterDB.dir = "Y:\\SFXLibrary\\Reaper Media Explorer Databases"
+		masterDB.path = masterDB.dir..pathDiv.."Windows MediaDB"
 	end
 
+	localDB.path = getLocalDBPath(pathDiv)
 end
 
 ---------------------------------------------
 
-checkOS()
+getPathsAccordingToOS()
 
-local iniTable = storeINIFileInTable()
-getlocalDBInfo(iniTable,localDBInfo)
-getlocalDBLastModifiedDate(localDBInfo)
-getMasterDBinfo(masterDBInfo.path)
+masterDB.lastMod,masterDB.prettyLastMod, masterDB.lastModUser = getMasterLastModifiedDate(masterDB.path)
+localDB.lastMod = getLocalLastModifiedDate()
 
-if isMasterDBNewerthanLocalDB(masterDBInfo,localDBInfo) then
-	updateLocalDB(localDBInfo,masterDBInfo)
-	-- writeINIFileFromTable(tempTable)
-end	
-
+if isMasterDBNewer(masterDB.lastMod,localDB.lastMod) then
+	local update = askIfWantToUpdate(masterDB.prettyLastMod, masterDB.lastModUser) 
+	if update == 6 then 
+		updateLocalDB(masterDB.path,localDB.path)
+	end	
+end
