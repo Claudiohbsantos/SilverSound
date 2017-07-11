@@ -1,3 +1,5 @@
+--@noindex
+
 -- -- REAPER.ini
 -- def_fx_filt64=NOT ( obsolete )
 
