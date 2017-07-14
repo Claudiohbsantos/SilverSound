@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="Silver Sound Resources" commit="fe89db3b95fe129deaa3e3e9096705a6d31fd156">
+<index version="1" name="Silver Sound Resources" commit="dc97c70284d24c9595f3c1d2b05498cb05ff5cd7">
   <category name="Scripts">
     <reapack name="SS_SilverSoundDatabaseInstaller.lua" type="script" desc="SS_SilverSoundDatabaseInstaller">
       <metadata>
@@ -37,6 +37,10 @@
       <version name="1.0" author="Claudiohbsantos" time="2017-07-11T22:22:41Z">
         <changelog><![CDATA[- Initial release]]></changelog>
         <source main="main">https://github.com/Claudiohbsantos/SilverSound/raw/fe89db3b95fe129deaa3e3e9096705a6d31fd156/Scripts/SS_Startup%20database%20Updater.lua</source>
+      </version>
+      <version name="1.1" author="Claudiohbsantos" time="2017-07-14T23:15:04Z">
+        <changelog><![CDATA[- Fixed error "SS_Startup database Updater.lua179:attempt to concatenate a nil value (local 'user')"]]></changelog>
+        <source main="main">https://github.com/Claudiohbsantos/SilverSound/raw/dc97c70284d24c9595f3c1d2b05498cb05ff5cd7/Scripts/SS_Startup%20database%20Updater.lua</source>
       </version>
     </reapack>
     <reapack name="SS_UpdateMasterDatabase.lua" type="script" desc="SS_Update Master Database">
