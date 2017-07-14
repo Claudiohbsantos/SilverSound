@@ -1,6 +1,6 @@
 --[[
 @description SS_Startup database Updater
-@version 1.0
+@version 1.1
 @author Claudiohbsantos
 @link http://claudiohbsantos.com
 @date 2017 07 11
@@ -8,7 +8,7 @@
   # SS_Startup database Updater
   Set this script to check for updates on every startup so it automatically updates the media explorer. 
 @changelog
-  - Initial release
+  - Fixed error "SS_Startup database Updater.lua179:attempt to concatenate a nil value (local 'user')"
 --]]
 
 local masterDB = {}
@@ -100,9 +100,9 @@ end
 
 function getMasterLastModifiedDate(masterDBpath)
 	local lastModFile = masterDBpath..pathDiv.."lastMod.txt"
-	local lastModTime, userWhoModded = readLastModFile(lastModFile)
+	local lastModTime, prettyLastModTime, userWhoModded = readLastModFile(lastModFile)
 
-	return lastModTime, userWhoModded
+	return lastModTime, prettyLastModTime, userWhoModded
 end
 
 function getLocalLastModifiedDate()
