@@ -87,6 +87,7 @@ end
 
 function readLastModFile(lastModFile)
 	if reaper.file_exists(lastModFile) then
+
 		file = io.open(lastModFile,"r")
 			local lastModTime = file:read()
 			local lastModTimeHumandReadable = file:read()

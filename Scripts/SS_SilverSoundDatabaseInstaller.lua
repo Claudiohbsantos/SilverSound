@@ -1,5 +1,5 @@
 -- @description SS_SilverSoundDatabaseInstaller
--- @version 1.1
+-- @version 2.0
 -- @author Claudiohbsantos
 -- @link http://claudiohbsantos.com
 -- @date 2017 03 26
@@ -7,7 +7,7 @@
 --   # SS_SilverSoundDatabaseInstaller
 --   Installer for the sound effects databases located in the DroboFS. Make sure you are connected to the network before running the script
 -- @changelog
---   - small fixes
+--   - Fix after auto updater implementation
 -----------
 local masterDB = {}
 
@@ -90,7 +90,7 @@ function backupINIFile()
 	local reaperINIpath = reaper.get_ini_file()
 
 	local backupCmd
-	if os == "OSX32" or os == "OSX64" then
+	if os == "OSX32" or os == "OSX64" then11
 		backupCmd = [[cp "]]..reaperINIpath..[[" "]]..reaperINIpath..[[BKP"]]
 	else
 		backupCmd = [[cmd.exe /C "copy /Y "]]..reaperINIpath..[[" "]]..reaperINIpath..[[BACKUP"]]
@@ -112,9 +112,7 @@ function copyDBFiles(masterDB)
 	end
 	reaper.ExecProcess(updateCmd,0)
 
-	local winUpdateLastMod = [[cmd.exe /C "copy /Y "]]..masterDB.dir..pathDiv..[[lastMod.txt" "]]..localDB.path..pathDiv..[[lastMod.txt"]]
-
-	local copyLastMod
+    local copyLastMod
 	if os == "OSX32" or os == "OSX64" then
 		copyLastMod = [[rsync -r "]]..masterDB.path..pathDiv..[[lastMod.txt" "]]..localdbfiles..pathDiv..[[lastMod.txt"]]
 	else
