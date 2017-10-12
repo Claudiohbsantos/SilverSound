@@ -1,5 +1,5 @@
 -- @description SS_SilverSoundDatabaseInstaller
--- @version 2.0
+-- @version 3.0
 -- @author Claudiohbsantos
 -- @link http://claudiohbsantos.com
 -- @date 2017 03 26
@@ -7,7 +7,7 @@
 --   # SS_SilverSoundDatabaseInstaller
 --   Installer for the sound effects databases located in the DroboFS. Make sure you are connected to the network before running the script
 -- @changelog
---   - Fix after auto updater implementation
+--   - Fixed typo on line 93
 -----------
 local masterDB = {}
 
