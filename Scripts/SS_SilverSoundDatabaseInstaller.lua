@@ -90,7 +90,7 @@ function backupINIFile()
 	local reaperINIpath = reaper.get_ini_file()
 
 	local backupCmd
-	if os == "OSX32" or os == "OSX64" then11
+	if os == "OSX32" or os == "OSX64" then
 		backupCmd = [[cp "]]..reaperINIpath..[[" "]]..reaperINIpath..[[BKP"]]
 	else
 		backupCmd = [[cmd.exe /C "copy /Y "]]..reaperINIpath..[[" "]]..reaperINIpath..[[BACKUP"]]
