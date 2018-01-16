@@ -10,7 +10,7 @@
 @changelog
   - Initial release
 @provides
-  ./fart.exe > ./fart.exe    
+  fart.exe > requirements/fart.exe    
 --]]
 
 local masterDB = {}
