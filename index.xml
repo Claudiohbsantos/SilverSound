@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="Silver Sound Resources" commit="edaac1baf6ce87687a713462a18ea8040686ced0">
+<index version="1" name="Silver Sound Resources" commit="132e3e1dd4bdab66f2bbc763e87da7d8622c9701">
   <category name="Scripts">
     <reapack name="SS_SilverSoundDatabaseInstaller.lua" type="script" desc="SS_SilverSoundDatabaseInstaller">
       <metadata>
@@ -78,6 +78,10 @@
       <version name="2.3" author="Claudiohbsantos" time="2018-01-16T18:10:56Z">
         <changelog><![CDATA[- Initial release]]></changelog>
         <source main="main">https://github.com/Claudiohbsantos/SilverSound/raw/edaac1baf6ce87687a713462a18ea8040686ced0/Scripts/SS_UpdateMasterDatabase.lua</source>
+      </version>
+      <version name="2.4" author="Claudiohbsantos" time="2018-01-16T18:14:42Z">
+        <changelog><![CDATA[- Initial release]]></changelog>
+        <source main="main">https://github.com/Claudiohbsantos/SilverSound/raw/132e3e1dd4bdab66f2bbc763e87da7d8622c9701/Scripts/SS_UpdateMasterDatabase.lua</source>
       </version>
     </reapack>
   </category>
