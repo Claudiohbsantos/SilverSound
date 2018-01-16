@@ -1,6 +1,6 @@
 --[[
 @description SS_Update Master Database
-@version 2.1
+@version 2.2
 @author Claudiohbsantos
 @link http://claudiohbsantos.com
 @date 2017 07 11
@@ -10,7 +10,7 @@
 @changelog
   - Initial release
 @provides
-  fart.exe > fart.exe    
+  ./fart.exe > ./fart.exe    
 --]]
 
 local masterDB = {}
