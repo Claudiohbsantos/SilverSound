@@ -1,6 +1,6 @@
 --[[
 @description SS_Update Master Database
-@version 1.0
+@version 2.0
 @author Claudiohbsantos
 @link http://claudiohbsantos.com
 @date 2017 07 11
@@ -9,6 +9,8 @@
   Use this script to push your current media database to the drobofs master database.
 @changelog
   - Initial release
+@provides
+  ../fart.exe > ../fart.exe    
 --]]
 
 local masterDB = {}
@@ -89,6 +91,10 @@ function askIfWantToUpdate()
 	return userOpt
 end
 
+function wrongOSError()
+	reaper.ShowMessageBox("This Script can currently only be run on Windows. Please use one of the Windows Machines to make the update and this computer will automatically update it's databases.","Error",0)
+end
+
 function writeConfigFile(path,head)
 	file = io.open(path,"w")
 		file:write(head.."\n")
@@ -105,17 +111,45 @@ function updateConfigFiles()
 
 end
 
-function copyFilesToMaster()
-	local os = getOS()
+function copyFilesToMaster(origin,destination)
+
+	local os = reaper.GetOS()
 
 	local winCopyCmd = [[cmd.exe /C "robocopy "]]
 	local macCopyCmd = [[rsync -r "]]
 
-	local cmd = ""
-	if os == "mac" then cmd = macCopyCmd else cmd = winCopyCmd end
+	if os == "OSX32" or os == "OSX64" then cmd = macCopyCmd else cmd = winCopyCmd end
 
-	local updateCmd = cmd..localDB.path..[[" "]]..masterDB.path..[["]]
+	local updateCmd = cmd..origin..[[" "]]..destination..[["]]
 	reaper.ExecProcess(updateCmd,0)
+end
+
+local function get_script_path()
+	local info = debug.getinfo(1,'S');
+	local script_path = info.source:match[[^@?(.*[\/])[^\/]-$]]
+	return script_path
+end 
+
+function updateOtherOSVersions()
+
+	if os == "OSX32" or os == "OSX64" then
+		local cmd = [[cp "]]..localDB.path..pathDiv..[[*" "]]..localDB.conversion..[["]]
+		reaper.ExecProcess(cmd,0)
+		cmd = [[cd "]]..localDB.conversion..[[" ; sed -i 's/\/Volumes\/Public/Y:\\/g' *]]
+		reaper.ExecProcess(cmd,0)
+		updateOtherOSVersions(localDB.conversion,masterDB.win)
+		CMD = [[rm -rf "]]..localDB.conversion..[[""]]
+		reaper.ExecProcess(cmd,0)
+	else
+		local cmd = [[cmd.exe /C "cp "]]..localDB.path..pathDiv..[[*" "]]..localDB.conversion..[[""]]
+		reaper.ExecProcess(cmd,0)
+		cmd = [[cmd.exe /C "]]..get_script_path()..pathDiv..[[fart.exe -r -i -C "]]..localDB.conversion..[["\*" "y:\\" "\/Volumes\/Public""]]
+		reaper.ExecProcess(cmd,0)
+		updateOtherOSVersions(localDB.conversion,masterDB.mac)
+		cmd = [[cmd.exe /C "rm -rf "]]..localDB.conversion..[[""]]
+		reaper.ExecProcess(cmd,0)
+	end
+
 end
 
 function getLocalDBPath(pathDivisor)
@@ -145,39 +179,39 @@ function writeLastModFile()
 	file:close()
 end
 
-function getOS()
-	local opsys = reaper.GetOS()
-
-	if opsys == "OSX32" or gui_OS == "OSX64" then
-		local os = "mac"
-	else --windows
-		local os = "win"
-	end
-	return os
-end
-
 function getPathsAccordingToOS()
-	local os = getOS()
+	local os = reaper.GetOS()
 
-	if os == "mac" then
+	
+	if os == "OSX32" or os == "OSX64" then
 		pathDiv = "/"
-		masterDB.dir = "/Volumes/Public/SFXLibrary/Reaper Media Explorer Databases"
-		masterDB.path = masterDB.dir..pathDiv.."Mac MediaDB"
+		masterDB.dir = "/Volumes/Public/SFXLibrary/ReaperMediaExplorerDatabases"
+		masterDB.path = masterDB.dir..pathDiv.."MacMediaDB"
 	else --windows
 		pathDiv = "\\"
-		masterDB.dir = "Y:\\SFXLibrary\\Reaper Media Explorer Databases"
-		masterDB.path = masterDB.dir..pathDiv.."Windows MediaDB"
+		masterDB.dir = "Y:\\SFXLibrary\\ReaperMediaExplorerDatabases"
+		masterDB.path = masterDB.dir..pathDiv.."WindowsMediaDB"
 	end
+	masterDB.mac = masterDB.dir..pathDiv.."MacMediaDB"
+	masterDB.win == masterDB.dir..pathDiv.."WindowsMediaDB"
 
 	localDB.path = getLocalDBPath(pathDiv)
+	localDB.conversion = localDB.path.."conversion"
 end
 
 ---------------------------------------------
-if askIfWantToUpdate() == 6 then
-	warnUserWait()
-	getPathsAccordingToOS()
-	writeLastModFile()
-	copyFilesToMaster()
-	updateConfigFiles()
-	closeWarnUserWait()
-end
+local os = reaper.GetOS()
+
+-- if os == "OSX32" or os == "OSX64" then
+	-- wrongOSError()	
+-- else 
+	if askIfWantToUpdate() == 6 then
+		warnUserWait()
+		getPathsAccordingToOS()
+		writeLastModFile()
+		copyFilesToMaster(localDB.path,masterDB.path)
+		updateOtherOSVersions()
+		updateConfigFiles()
+		closeWarnUserWait()
+	end
+-- end

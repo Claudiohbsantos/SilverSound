@@ -1,6 +1,6 @@
 --[[
 @description SS_Startup database Updater
-@version 1.1
+@version 2.0
 @author Claudiohbsantos
 @link http://claudiohbsantos.com
 @date 2017 07 11
@@ -123,13 +123,12 @@ function isMasterDBNewer(masterLastMod,localLastMod)
 end
 
 function copyFilesFromMaster()
-	local os = getOS()
+	local os = reaper.GetOS()
 
 	local winCopyCmd = [[cmd.exe /C "robocopy "]]
 	local macCopyCmd = [[rsync -r "]]
 
-	local cmd = ""
-	if os == "mac" then cmd = macCopyCmd else cmd = winCopyCmd end
+	if os == "OSX32" or os == "OSX64" then cmd = macCopyCmd else cmd = winCopyCmd end
 
 	local updateCmd = cmd..masterDB.path..[[" "]]..localDB.path..[["]]
 	reaper.ExecProcess(updateCmd,0)
@@ -188,28 +187,17 @@ function getLocalDBPath(pathDivisor)
 	return localDBPath
 end
 
-function getOS()
-	local opsys = reaper.GetOS()
-
-	if opsys == "OSX32" or gui_OS == "OSX64" then
-		local os = "mac"
-	else --windows
-		local os = "win"
-	end
-	return os
-end
-
 function getPathsAccordingToOS()
-	local os = getOS()
+	local os = reaper.GetOS()
 
-	if os == "mac" then
+	if os == "OSX32" or os == "OSX64" then
 		pathDiv = "/"
-		masterDB.dir = "/Volumes/Public/SFXLibrary/Reaper Media Explorer Databases"
-		masterDB.path = masterDB.dir..pathDiv.."Mac MediaDB"
+		masterDB.dir = "/Volumes/Public/SFXLibrary/ReaperMediaExplorerDatabases"
+		masterDB.path = masterDB.dir..pathDiv.."MacMediaDB"
 	else --windows
 		pathDiv = "\\"
-		masterDB.dir = "Y:\\SFXLibrary\\Reaper Media Explorer Databases"
-		masterDB.path = masterDB.dir..pathDiv.."Windows MediaDB"
+		masterDB.dir = "Y:\\SFXLibrary\\ReaperMediaExplorerDatabases"
+		masterDB.path = masterDB.dir..pathDiv.."WindowsMediaDB"
 	end
 
 	localDB.path = getLocalDBPath(pathDiv)

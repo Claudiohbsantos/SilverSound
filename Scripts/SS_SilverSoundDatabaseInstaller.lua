@@ -1,5 +1,5 @@
 -- @description SS_SilverSoundDatabaseInstaller
--- @version 3.0
+-- @version 4.0
 -- @author Claudiohbsantos
 -- @link http://claudiohbsantos.com
 -- @date 2017 03 26
@@ -119,7 +119,7 @@ function copyDBFiles(masterDB)
 		copyLastMod = [[cmd.exe /C "robocopy "]]..masterDB.path..pathDiv..[[lastMod.txt" "]]..localdbfiles..pathDiv..[[lastMod.txt"]]
 	end
 	reaper.ExecProcess(copyLastMod,0)
-
+	closeWarnUserWait()
 	reaper.ShowMessageBox("The Local SilverSound Database was installed. If You're on Windows the previous .ini file was copied as a Backup.","Sound Library Installer",0)
 end
 
@@ -128,16 +128,42 @@ function checkOS()
 
 	if os == "OSX32" or os == "OSX64" then
 		pathDiv = "/"
-		masterDB.path = "/Volumes/Public/SFXLibrary/Reaper Media Explorer Databases"
-		masterDB.dbfiles = "/Volumes/Public/SFXLibrary/Reaper Media Explorer Databases/Mac MediaDB"
+		masterDB.path = "/Volumes/Public/SFXLibrary/ReaperMediaExplorerDatabases"
+		masterDB.dbfiles = "/Volumes/Public/SFXLibrary/ReaperMediaExplorerDatabases/MacMediaDB"
 	else --windows
 		pathDiv = "\\"
-		masterDB.path = "Y:\\SFXLibrary\\Reaper Media Explorer Databases"
-		masterDB.dbfiles = "Y:\\SFXLibrary\\Reaper Media Explorer Databases\\Windows MediaDB"
+		masterDB.path = "Y:\\SFXLibrary\\ReaperMediaExplorerDatabases"
+		masterDB.dbfiles = "Y:\\SFXLibrary\\ReaperMediaExplorerDatabases\\WindowsMediaDB"
 		-- masterDB.path = "D:\\Reaper Media Explorer Databases" --DEBUG Path
 		-- masterDB.dbfiles = "D:\\Reaper Media Explorer Databases\\Windows MediaDB"
 	end
 	
+end
+
+function warnUserWait()
+	obj_mainW = 800	
+	obj_mainH = 200
+	obj_offs = 10
+	
+	gui_aa = 1
+	gui_fontname = 'Calibri'
+	gui_fontsize = 40     
+	local gui_OS = reaper.GetOS()
+	if gui_OS == "OSX32" or gui_OS == "OSX64" then gui_fontsize = gui_fontsize - 7 end
+
+	local l, t, r, b = 0, 0, obj_mainW,obj_mainH   
+	local __, __, screen_w, screen_h = reaper.my_getViewport(l, t, r, b, l, t, r, b, 1)    
+	local x, y = (screen_w - obj_mainW) / 2, (screen_h - obj_mainH) / 2    
+	gfx.init("Please Wait", obj_mainW,obj_mainH, 0, x, y)  
+	gfx.x = 50
+	gfx.y = 100
+
+	gfx.drawstr("Please Wait Until the process is finished. Do not close reaper.\n\nAnd trust me, even if windows is saying I'm not responding, I'm still here.")
+	gfx.update()
+end
+
+function closeWarnUserWait()
+	gfx.quit()
 end
 
 ---------------------------------------------
@@ -151,6 +177,7 @@ local userOption = reaper.ShowMessageBox(warning,"Silver Sound Library Installer
 if userOption == 1 then
 	local iniFile = storeINIFileInTable()
 	local masterConfig = loadMasterDatabaseConfig(masterDB)
+	warnUserWait()
 	backupINIFile()
 	writeINIFileFromTable(iniFile,masterConfig)
 	copyDBFiles(masterDB)
