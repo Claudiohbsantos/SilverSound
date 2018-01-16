@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="Silver Sound Resources" commit="8e8bb406cde4ce2ff25cdeea30f7c262419a0f5b">
+<index version="1" name="Silver Sound Resources" commit="5ba25a3620f9187ea87f3d8f38f88889406f8e14">
   <category name="Scripts">
     <reapack name="SS_SilverSoundDatabaseInstaller.lua" type="script" desc="SS_SilverSoundDatabaseInstaller">
       <metadata>
@@ -29,6 +29,10 @@
         <changelog><![CDATA[- Fixed typo on line 93]]></changelog>
         <source main="main">https://github.com/Claudiohbsantos/SilverSound/raw/8e8bb406cde4ce2ff25cdeea30f7c262419a0f5b/Scripts/SS_SilverSoundDatabaseInstaller.lua</source>
       </version>
+      <version name="4.0" author="Claudiohbsantos" time="2018-01-16T18:02:27Z">
+        <changelog><![CDATA[- Fixed typo on line 93]]></changelog>
+        <source main="main">https://github.com/Claudiohbsantos/SilverSound/raw/5ba25a3620f9187ea87f3d8f38f88889406f8e14/Scripts/SS_SilverSoundDatabaseInstaller.lua</source>
+      </version>
     </reapack>
     <reapack name="SS_Startup database Updater.lua" type="script" desc="SS_Startup database Updater">
       <metadata>
@@ -49,6 +53,10 @@
       <version name="1.1" author="Claudiohbsantos" time="2017-07-14T23:15:04Z">
         <changelog><![CDATA[- Fixed error "SS_Startup database Updater.lua179:attempt to concatenate a nil value (local 'user')"]]></changelog>
         <source main="main">https://github.com/Claudiohbsantos/SilverSound/raw/dc97c70284d24c9595f3c1d2b05498cb05ff5cd7/Scripts/SS_Startup%20database%20Updater.lua</source>
+      </version>
+      <version name="2.0" author="Claudiohbsantos" time="2018-01-16T18:02:27Z">
+        <changelog><![CDATA[- Fixed error "SS_Startup database Updater.lua179:attempt to concatenate a nil value (local 'user')"]]></changelog>
+        <source main="main">https://github.com/Claudiohbsantos/SilverSound/raw/5ba25a3620f9187ea87f3d8f38f88889406f8e14/Scripts/SS_Startup%20database%20Updater.lua</source>
       </version>
     </reapack>
     <reapack name="SS_UpdateMasterDatabase.lua" type="script" desc="SS_Update Master Database">
