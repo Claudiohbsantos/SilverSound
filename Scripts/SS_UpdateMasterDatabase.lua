@@ -1,6 +1,6 @@
 --[[
 @description SS_Update Master Database
-@version 2.2
+@version 2.3
 @author Claudiohbsantos
 @link http://claudiohbsantos.com
 @date 2017 07 11
@@ -9,8 +9,6 @@
   Use this script to push your current media database to the drobofs master database.
 @changelog
   - Initial release
-@provides
-  fart.exe > requirements/fart.exe    
 --]]
 
 local masterDB = {}
@@ -143,7 +141,7 @@ function updateOtherOSVersions()
 	else
 		local cmd = [[cmd.exe /C "cp "]]..localDB.path..pathDiv..[[*" "]]..localDB.conversion..[[""]]
 		reaper.ExecProcess(cmd,0)
-		cmd = [[cmd.exe /C "]]..get_script_path()..pathDiv..[[fart.exe -r -i -C "]]..localDB.conversion..[["\*" "y:\\" "\/Volumes\/Public""]]
+		cmd = [[cmd.exe /C "C:\SyncedFiles\StudioFiles\Portables\fart.exe -r -i -C "]]..localDB.conversion..[["\*" "y:\\" "\/Volumes\/Public""]]
 		reaper.ExecProcess(cmd,0)
 		updateOtherOSVersions(localDB.conversion,masterDB.mac)
 		cmd = [[cmd.exe /C "rm -rf "]]..localDB.conversion..[[""]]
