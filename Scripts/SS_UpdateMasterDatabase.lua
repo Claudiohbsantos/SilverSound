@@ -1,6 +1,6 @@
 --[[
 @description SS_Update Master Database
-@version 2.3
+@version 2.4
 @author Claudiohbsantos
 @link http://claudiohbsantos.com
 @date 2017 07 11
@@ -191,7 +191,7 @@ function getPathsAccordingToOS()
 		masterDB.path = masterDB.dir..pathDiv.."WindowsMediaDB"
 	end
 	masterDB.mac = masterDB.dir..pathDiv.."MacMediaDB"
-	masterDB.win == masterDB.dir..pathDiv.."WindowsMediaDB"
+	masterDB.win = masterDB.dir..pathDiv.."WindowsMediaDB"
 
 	localDB.path = getLocalDBPath(pathDiv)
 	localDB.conversion = localDB.path.."conversion"
