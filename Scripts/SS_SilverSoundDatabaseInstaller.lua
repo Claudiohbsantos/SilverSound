@@ -1,5 +1,5 @@
 -- @description SS_SilverSoundDatabaseInstaller
--- @version 4.0
+-- @version 4.8beta
 -- @author Claudiohbsantos
 -- @link http://claudiohbsantos.com
 -- @date 2017 03 26
@@ -11,6 +11,19 @@
 -----------
 local masterDB = {}
 
+local function loadCSLibrary()
+	local function get_script_path()
+		local info = debug.getinfo(1,'S');
+		local script_path = info.source:match[[^@?(.*[\/])[^\/]-$]]
+		return script_path
+	end 
+
+	local scriptPath = get_script_path()
+	package.path = package.path .. ";" .. scriptPath .. "?.lua"
+	local library = "CS_Library"
+	require(library)
+end
+
 function msg(msg)
 	reaper.ShowConsoleMsg(tostring(msg).."\n")
 end
@@ -19,9 +32,7 @@ function msgBox(msg)
 	reaper.ShowMessageBox(msg,"Title",0)
 end
 
-
 function storeINIFileInTable()
-
 	local reaperINIpath = reaper.get_ini_file()
 	local iniFileTable = {}
 	iniFileTable.head = ""
@@ -50,7 +61,6 @@ function storeINIFileInTable()
 			iniFileTable.explorer = iniFileTable.explorer..line.."\n"
 		end
 
-
 	end
 
 	return iniFileTable
@@ -59,7 +69,7 @@ end
 function loadMasterDatabaseConfig(masterDB)
 
 	local masterConfig
-	if os == "OSX32" or os == "OSX64" then
+	if opSys == "OSX32" or opSys == "OSX64" then
 		masterConfig = masterDB.path..pathDiv.."Mac_Media Explorer Config.txt"
 	else
 		masterConfig = masterDB.path..pathDiv.."Win_Media Explorer Config.txt"
@@ -90,13 +100,13 @@ function backupINIFile()
 	local reaperINIpath = reaper.get_ini_file()
 
 	local backupCmd
-	if os == "OSX32" or os == "OSX64" then
-		backupCmd = [[cp "]]..reaperINIpath..[[" "]]..reaperINIpath..[[BKP"]]
+	if opSys == "OSX32" or opSys == "OSX64" then
+		backupCmd = [[rsync "]]..reaperINIpath..[[" "]]..reaperINIpath..[[BKP"]]
+        os.execute(backupCmd)
 	else
 		backupCmd = [[cmd.exe /C "copy /Y "]]..reaperINIpath..[[" "]]..reaperINIpath..[[BACKUP"]]
+        reaper.ExecProcess(backupCmd,0)
 	end
-	
-	reaper.ExecProcess(backupCmd,0)
 
 end
 
@@ -105,39 +115,45 @@ function copyDBFiles(masterDB)
 	local localdbfiles = reaper.GetResourcePath()..pathDiv.."MediaDB"
 
 	local updateCmd
-	if os == "OSX32" or os == "OSX64" then
-		updateCmd = [[rsync -r "]]..masterDB.dbfiles..[[" "]]..localdbfiles..[["]]
+	if opSys == "OSX32" or opSys== "OSX64" then
+		updateCmd = [[rsync -av "]]..masterDB.dbfiles..[[/" "]]..localdbfiles..[["]]
+        os.execute(updateCmd)
 	else
 		updateCmd = [[cmd.exe /C "robocopy "]]..masterDB.dbfiles..[[" "]]..localdbfiles..[["]]
+        reaper.ExecProcess(updateCmd,0)
 	end
-	reaper.ExecProcess(updateCmd,0)
+	
 
     local copyLastMod
-	if os == "OSX32" or os == "OSX64" then
+	if opSys == "OSX32" or opSys == "OSX64" then
 		copyLastMod = [[rsync -r "]]..masterDB.path..pathDiv..[[lastMod.txt" "]]..localdbfiles..pathDiv..[[lastMod.txt"]]
+        os.execute(copyLastMod)
 	else
 		copyLastMod = [[cmd.exe /C "robocopy "]]..masterDB.path..pathDiv..[[lastMod.txt" "]]..localdbfiles..pathDiv..[[lastMod.txt"]]
+        reaper.ExecProcess(copyLastMod,0)
 	end
-	reaper.ExecProcess(copyLastMod,0)
+	
 	closeWarnUserWait()
 	reaper.ShowMessageBox("The Local SilverSound Database was installed. If You're on Windows the previous .ini file was copied as a Backup.","Sound Library Installer",0)
 end
 
 function checkOS()
-	os = reaper.GetOS()
+	opSys = reaper.GetOS()
 
-	if os == "OSX32" or os == "OSX64" then
+	if opSys == "OSX32" or opSys == "OSX64" then
 		pathDiv = "/"
 		masterDB.path = "/Volumes/Public/SFXLibrary/ReaperMediaExplorerDatabases"
 		masterDB.dbfiles = "/Volumes/Public/SFXLibrary/ReaperMediaExplorerDatabases/MacMediaDB"
 	else --windows
 		pathDiv = "\\"
 		masterDB.path = "Y:\\SFXLibrary\\ReaperMediaExplorerDatabases"
+-- masterDB.path = [[\\drobofs\Public\SFXLibrary\ReaperMediaExplorerDatabases]]
 		masterDB.dbfiles = "Y:\\SFXLibrary\\ReaperMediaExplorerDatabases\\WindowsMediaDB"
+-- masterDB.dbfiles = [[\\drobofs\Public\SFXLibrary\ReaperMediaExplorerDatabases\WindowsMediaDB]]
 		-- masterDB.path = "D:\\Reaper Media Explorer Databases" --DEBUG Path
 		-- masterDB.dbfiles = "D:\\Reaper Media Explorer Databases\\Windows MediaDB"
 	end
-	
+
 end
 
 function warnUserWait()
@@ -167,8 +183,9 @@ function closeWarnUserWait()
 end
 
 ---------------------------------------------
-
+loadCSLibrary()
 checkOS()
+
 
 local warning = "This script will install the SilverSound Database and copy all necessary files to this computer. Make sure you are connected to the network before starting. Beware: this will overwrite any media explorer databases you already have set up."
 

@@ -1,6 +1,6 @@
 --[[
 @description SS_Update Master Database
-@version 2.4
+@version 3.0beta
 @author Claudiohbsantos
 @link http://claudiohbsantos.com
 @date 2017 07 11
@@ -66,8 +66,8 @@ function warnUserWait()
 	gui_aa = 1
 	gui_fontname = 'Calibri'
 	gui_fontsize = 40     
-	local gui_OS = reaper.GetOS()
-	if gui_OS == "OSX32" or gui_OS == "OSX64" then gui_fontsize = gui_fontsize - 7 end
+	local gui_opSys =  reaper.GetOS()
+	if gui_opSys ==  "OSX32" or gui_opSys ==  "OSX64" then gui_fontsize = gui_fontsize - 7 end
 
 	local l, t, r, b = 0, 0, obj_mainW,obj_mainH   
 	local __, __, screen_w, screen_h = reaper.my_getViewport(l, t, r, b, l, t, r, b, 1)    
@@ -103,7 +103,6 @@ end
 function updateConfigFiles()
 	iniFileTable = storeINIFileInTable()
 
-
 	writeConfigFile(masterDB.dir..[[/Mac_Media Explorer Config.txt]],"[reaper_sexplorer]")
 	writeConfigFile(masterDB.dir..[[/Win_Media Explorer Config.txt]],"[reaper_explorer]")
 
@@ -111,15 +110,20 @@ end
 
 function copyFilesToMaster(origin,destination)
 
-	local os = reaper.GetOS()
+	local opSys =  reaper.GetOS()
 
-	local winCopyCmd = [[cmd.exe /C "robocopy "]]
-	local macCopyCmd = [[rsync -r "]]
+	if opSys ==  "OSX32" or opSys ==  "OSX64" then
+		local macCopyCmd = [[rsync -av "]]
+		cmd = macCopyCmd 
+		local updateCmd = cmd..origin..[[" "]]..destination..[["]]
+		os.execute(updateCmd)
+	else 
+		local winCopyCmd = [[cmd.exe /C "robocopy "]]
+		cmd = winCopyCmd 
+		local updateCmd = cmd..origin..[[" "]]..destination..[["]]
+		reaper.ExecProcess(updateCmd,0)
+	end
 
-	if os == "OSX32" or os == "OSX64" then cmd = macCopyCmd else cmd = winCopyCmd end
-
-	local updateCmd = cmd..origin..[[" "]]..destination..[["]]
-	reaper.ExecProcess(updateCmd,0)
 end
 
 local function get_script_path()
@@ -130,21 +134,25 @@ end
 
 function updateOtherOSVersions()
 
-	if os == "OSX32" or os == "OSX64" then
-		local cmd = [[cp "]]..localDB.path..pathDiv..[[*" "]]..localDB.conversion..[["]]
-		reaper.ExecProcess(cmd,0)
-		cmd = [[cd "]]..localDB.conversion..[[" ; sed -i 's/\/Volumes\/Public/Y:\\/g' *]]
-		reaper.ExecProcess(cmd,0)
-		updateOtherOSVersions(localDB.conversion,masterDB.win)
-		CMD = [[rm -rf "]]..localDB.conversion..[[""]]
-		reaper.ExecProcess(cmd,0)
+	if opSys ==  "OSX32" or opSys ==  "OSX64" then
+		-- local cmd = [[cp "]]..localDB.path..pathDiv..[[*" "]]..localDB.conversion..[["]]
+		-- reaper.ExecProcess(cmd,0)
+		-- cmd = [[cd "]]..localDB.conversion..[[" ; sed -i 's/\/Volumes\/Public/Y:\\/g' *]]
+		-- reaper.ExecProcess(cmd,0)
+		-- copyFilesToMaster(localDB.conversion,masterDB.win)
+		-- CMD = [[rm -rf "]]..localDB.conversion..[[""]]
+		-- reaper.ExecProcess(cmd,0)
 	else
-		local cmd = [[cmd.exe /C "cp "]]..localDB.path..pathDiv..[[*" "]]..localDB.conversion..[[""]]
+		
+		local cmd = [[cmd.exe /C "mkdir "]]..localDB.conversion..[[""]]
 		reaper.ExecProcess(cmd,0)
-		cmd = [[cmd.exe /C "C:\SyncedFiles\StudioFiles\Portables\fart.exe -r -i -C "]]..localDB.conversion..[["\*" "y:\\" "\/Volumes\/Public""]]
+		cmd = [[cmd.exe /C "robocopy "]]..localDB.path..[[" "]]..localDB.conversion..[[""]]
 		reaper.ExecProcess(cmd,0)
-		updateOtherOSVersions(localDB.conversion,masterDB.mac)
-		cmd = [[cmd.exe /C "rm -rf "]]..localDB.conversion..[[""]]
+		-- cmd = [[cmd.exe /C "powershell -Command "(gc 18-01.ReaperFileList) -replace 'y:\\', '/Volumes/Public/' -replace '\\', '/' | sc 18-01.ReaperFileList""]]
+		cmd = [[cmd.exe /C "powershell -Command "ls "]]..localDB.conversion..[[" | %{ $f=$_; (gc $f.PSPath) | %{ $_ -replace 'y:\\', '/Volumes/Public/' -replace 'Y:\\', '/Volumes/Public/' -replace '\\','/' } | sc $f.PSPath }""]]
+		reaper.ExecProcess(cmd,0)
+		copyFilesToMaster(localDB.conversion,masterDB.mac)
+		cmd = [[cmd.exe /C "rd /S /Q "]]..localDB.conversion..[[""]]
 		reaper.ExecProcess(cmd,0)
 	end
 
@@ -178,17 +186,19 @@ function writeLastModFile()
 end
 
 function getPathsAccordingToOS()
-	local os = reaper.GetOS()
+	local opSys =  reaper.GetOS()
 
 	
-	if os == "OSX32" or os == "OSX64" then
+	if opSys ==  "OSX32" or opSys ==  "OSX64" then
 		pathDiv = "/"
 		masterDB.dir = "/Volumes/Public/SFXLibrary/ReaperMediaExplorerDatabases"
 		masterDB.path = masterDB.dir..pathDiv.."MacMediaDB"
 	else --windows
 		pathDiv = "\\"
 		masterDB.dir = "Y:\\SFXLibrary\\ReaperMediaExplorerDatabases"
+-- masterDB.dir = [[C:\Users\ShortBus\Desktop\MockServer]]
 		masterDB.path = masterDB.dir..pathDiv.."WindowsMediaDB"
+-- masterDB.path = [[C:\Users\ShortBus\Desktop\MockServer]]..pathDiv.."WindowsMediaDB"
 	end
 	masterDB.mac = masterDB.dir..pathDiv.."MacMediaDB"
 	masterDB.win = masterDB.dir..pathDiv.."WindowsMediaDB"
@@ -198,11 +208,11 @@ function getPathsAccordingToOS()
 end
 
 ---------------------------------------------
-local os = reaper.GetOS()
+local opSys =  reaper.GetOS()
 
--- if os == "OSX32" or os == "OSX64" then
-	-- wrongOSError()	
--- else 
+if opSys ==  "OSX32" or opSys ==  "OSX64" then
+	wrongOSError()	
+else 
 	if askIfWantToUpdate() == 6 then
 		warnUserWait()
 		getPathsAccordingToOS()
@@ -212,4 +222,4 @@ local os = reaper.GetOS()
 		updateConfigFiles()
 		closeWarnUserWait()
 	end
--- end
+end

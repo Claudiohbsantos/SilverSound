@@ -1,6 +1,6 @@
 --[[
 @description SS_Startup database Updater
-@version 2.0
+@version 2.8beta
 @author Claudiohbsantos
 @link http://claudiohbsantos.com
 @date 2017 07 11
@@ -59,7 +59,7 @@ end
 function loadMasterDatabaseConfig(masterDB)
 
 	local masterConfig
-	if os == "OSX32" or os == "OSX64" then
+	if opSys ==  "OSX32" or opSys ==  "OSX64" then
 		masterConfig = masterDB.dir..pathDiv.."Mac_Media Explorer Config.txt"
 	else
 		masterConfig = masterDB.dir..pathDiv.."Win_Media Explorer Config.txt"
@@ -123,18 +123,27 @@ function isMasterDBNewer(masterLastMod,localLastMod)
 end
 
 function copyFilesFromMaster()
-	local os = reaper.GetOS()
+	local opSys =  reaper.GetOS()
 
-	local winCopyCmd = [[cmd.exe /C "robocopy "]]
-	local macCopyCmd = [[rsync -r "]]
+	if opSys ==  "OSX32" or opSys ==  "OSX64" then 
+		local macCopyCmd = [[rsync -av "]]
+		cmd = macCopyCmd 
+		local updateCmd = cmd..masterDB.path..[[" "]]..localDB.path..[["]]
+		os.execute(updateCmd)
+		local updateLastMod = cmd..masterDB.dir..pathDiv..[[lastMod.txt" "]]..localDB.path..pathDiv..[[lastMod.txt"]]
+		os.execute(updateLastMod)
+	else 
+		local winCopyCmd = [[cmd.exe /C "robocopy "]]
+		cmd = winCopyCmd
+		local updateCmd = cmd..masterDB.path..[[" "]]..localDB.path..[["]]
+		reaper.ExecProcess(updateCmd,0) 
+		local updateLastMod = cmd..masterDB.dir..pathDiv..[[lastMod.txt" "]]..localDB.path..pathDiv..[[lastMod.txt"]]
+		reaper.ExecProcess(updateLastMod,0)
+	end
 
-	if os == "OSX32" or os == "OSX64" then cmd = macCopyCmd else cmd = winCopyCmd end
+	
 
-	local updateCmd = cmd..masterDB.path..[[" "]]..localDB.path..[["]]
-	reaper.ExecProcess(updateCmd,0)
-
-	local updateLastMod = cmd..masterDB.dir..pathDiv..[[lastMod.txt" "]]..localDB.path..pathDiv..[[lastMod.txt"]]
-	reaper.ExecProcess(updateLastMod,0)
+	
 end
 
 function warnUserWait()
@@ -145,8 +154,8 @@ function warnUserWait()
 	gui_aa = 1
 	gui_fontname = 'Calibri'
 	gui_fontsize = 40     
-	local gui_OS = reaper.GetOS()
-	if gui_OS == "OSX32" or gui_OS == "OSX64" then gui_fontsize = gui_fontsize - 7 end
+	local gui_opSys =  reaper.GetOS()
+	if gui_opSys ==  "OSX32" or gui_opSys ==  "OSX64" then gui_fontsize = gui_fontsize - 7 end
 
 	local l, t, r, b = 0, 0, obj_mainW,obj_mainH   
 	local __, __, screen_w, screen_h = reaper.my_getViewport(l, t, r, b, l, t, r, b, 1)    
@@ -188,9 +197,9 @@ function getLocalDBPath(pathDivisor)
 end
 
 function getPathsAccordingToOS()
-	local os = reaper.GetOS()
+	local opSys =  reaper.GetOS()
 
-	if os == "OSX32" or os == "OSX64" then
+	if opSys ==  "OSX32" or opSys ==  "OSX64" then
 		pathDiv = "/"
 		masterDB.dir = "/Volumes/Public/SFXLibrary/ReaperMediaExplorerDatabases"
 		masterDB.path = masterDB.dir..pathDiv.."MacMediaDB"
