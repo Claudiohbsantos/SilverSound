@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="Silver Sound Resources" commit="0300403253df471c18369fbc6b2898c683c28a35">
+<index version="1" name="Silver Sound Resources" commit="db513be5946a88a96f4cfecc4ad9d1df79814a0e">
   <category name="Scripts">
     <reapack name="SS_SilverSoundDatabaseInstaller.lua" type="script" desc="SS_SilverSoundDatabaseInstaller">
       <metadata>
@@ -73,6 +73,10 @@
       <version name="3.0" author="Claudiohbsantos" time="2018-02-02T22:31:07Z">
         <changelog><![CDATA[- Fixed error "SS_Startup database Updater.lua179:attempt to concatenate a nil value (local 'user')"]]></changelog>
         <source main="main">https://github.com/Claudiohbsantos/SilverSound/raw/0300403253df471c18369fbc6b2898c683c28a35/Scripts/SS_Startup%20database%20Updater.lua</source>
+      </version>
+      <version name="3.1" author="Claudiohbsantos" time="2018-02-02T22:41:47Z">
+        <changelog><![CDATA[- fixed error on line 195, in which script couldn't find "reaper.ini" if all lowercase]]></changelog>
+        <source main="main">https://github.com/Claudiohbsantos/SilverSound/raw/db513be5946a88a96f4cfecc4ad9d1df79814a0e/Scripts/SS_Startup%20database%20Updater.lua</source>
       </version>
     </reapack>
     <reapack name="SS_UpdateMasterDatabase.lua" type="script" desc="SS_Update Master Database">
