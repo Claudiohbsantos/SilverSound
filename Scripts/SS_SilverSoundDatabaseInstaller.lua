@@ -1,5 +1,5 @@
 -- @description SS_SilverSoundDatabaseInstaller
--- @version 4.8beta
+-- @version 5.0
 -- @author Claudiohbsantos
 -- @link http://claudiohbsantos.com
 -- @date 2017 03 26
@@ -11,18 +11,6 @@
 -----------
 local masterDB = {}
 
-local function loadCSLibrary()
-	local function get_script_path()
-		local info = debug.getinfo(1,'S');
-		local script_path = info.source:match[[^@?(.*[\/])[^\/]-$]]
-		return script_path
-	end 
-
-	local scriptPath = get_script_path()
-	package.path = package.path .. ";" .. scriptPath .. "?.lua"
-	local library = "CS_Library"
-	require(library)
-end
 
 function msg(msg)
 	reaper.ShowConsoleMsg(tostring(msg).."\n")
@@ -183,7 +171,6 @@ function closeWarnUserWait()
 end
 
 ---------------------------------------------
-loadCSLibrary()
 checkOS()
 
 

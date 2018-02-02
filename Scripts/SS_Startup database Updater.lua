@@ -1,6 +1,6 @@
 --[[
 @description SS_Startup database Updater
-@version 2.8beta
+@version 3.0
 @author Claudiohbsantos
 @link http://claudiohbsantos.com
 @date 2017 07 11

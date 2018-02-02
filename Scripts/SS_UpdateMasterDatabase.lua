@@ -1,6 +1,6 @@
 --[[
 @description SS_Update Master Database
-@version 3.0beta
+@version 3.0
 @author Claudiohbsantos
 @link http://claudiohbsantos.com
 @date 2017 07 11
