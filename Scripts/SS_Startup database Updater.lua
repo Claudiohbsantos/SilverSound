@@ -140,9 +140,6 @@ function copyFilesFromMaster()
 		local updateLastMod = cmd..masterDB.dir..pathDiv..[[lastMod.txt" "]]..localDB.path..pathDiv..[[lastMod.txt"]]
 		reaper.ExecProcess(updateLastMod,0)
 	end
-
-	
-
 	
 end
 
