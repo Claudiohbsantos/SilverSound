@@ -1,6 +1,6 @@
 --[[
 @description SS_Startup database Updater
-@version 3.0
+@version 3.1
 @author Claudiohbsantos
 @link http://claudiohbsantos.com
 @date 2017 07 11
@@ -8,7 +8,7 @@
   # SS_Startup database Updater
   Set this script to check for updates on every startup so it automatically updates the media explorer. 
 @changelog
-  - Fixed error "SS_Startup database Updater.lua179:attempt to concatenate a nil value (local 'user')"
+  - fixed error on line 195, in which script couldn't find "reaper.ini" if all lowercase
 --]]
 
 local masterDB = {}
@@ -191,7 +191,7 @@ end
 
 function getLocalDBPath(pathDivisor)
 	local iniPath = reaper.get_ini_file()
-	local resourcesDir = string.match(iniPath,"(.+)"..pathDivisor.."REAPER.ini$")
+	local resourcesDir = string.match(iniPath,"(.+)"..pathDivisor.."REAPER.ini$") or string.match(iniPath,"(.+)"..pathDivisor.."reaper.ini$")
 	local localDBPath = resourcesDir..pathDivisor.."MediaDB"
 	return localDBPath
 end
